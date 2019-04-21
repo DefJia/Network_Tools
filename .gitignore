@@ -1,0 +1,7 @@
+test.*
+.config.ini
+.*/*
+Others/
+__pycache__/
+Logs/
+
