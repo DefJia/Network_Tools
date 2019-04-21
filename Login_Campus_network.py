@@ -28,7 +28,7 @@ class Login:
         self.n = 200
         self.type = 1
         self.token = ''
-        self.token = '763e06af37781e26d0be7ab65d5a6bbb5e2894913819a1d768a00ad05422be08'
+        self.token = ''
         self.info = ''
         self.hmd5 = ''
         self.chksum = ''
