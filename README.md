@@ -19,6 +19,8 @@
 
 需要安装Node，并在.config.ini中填写相关信息。
 
+> Scripts/Node.sh为树莓派安装node的脚本。
+
 ------
 
 [联系作者](mailto:code@defjia.top)
