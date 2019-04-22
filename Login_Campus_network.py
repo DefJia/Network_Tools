@@ -1,7 +1,10 @@
 import execjs
 import requests
 import time
+import socket
+from datetime import datetime
 import json
+from configparser import ConfigParser
 
 
 class Login:
@@ -10,7 +13,6 @@ class Login:
         self.url = dict()
         self.url['preparation'] = 'http://10.0.0.55/cgi-bin/get_challenge'
         self.url['target'] = 'http://10.0.0.55/cgi-bin/srun_portal'
-        # self.url['target'] = 'http://httpbin.org/get'
         # Urls
         self.headers = dict()
         self.headers['Referer'] = 'http://10.0.0.55/srun_portal_pc_yys.php?ac_id=8&'
@@ -26,7 +28,7 @@ class Login:
         self.n = 200
         self.type = 1
         self.token = ''
-        self.token = '763e06af37781e26d0be7ab65d5a6bbb5e2894913819a1d768a00ad05422be08'
+        self.token = ''
         self.info = ''
         self.hmd5 = ''
         self.chksum = ''
@@ -45,7 +47,7 @@ class Login:
         data['username'] = self.username
         data['ip'] = self.ip
         r = self.session.get(self.url['preparation'], params=data, headers=self.headers)
-        print(r.text)
+        # print(r.text)
         if r.status_code == 200:
             raw_data = r.text[19:-1]
             try:
@@ -77,11 +79,38 @@ class Login:
         data['n'] = self.n
         data['type'] = self.type
         r = self.session.get(self.url['target'], params=data, headers=self.headers)
-        print(r.text)
+        info = self.parse_json(r.text, 'error')
+        ip = self.parse_json(r.text, 'client_ip')
+        if info == 'ok':
+            print('%s login successfully at %s!' % (ip, str(datetime.now())[:-7]))
+            return 0
+        else:
+            # error_info = self.parse_json(r.text, 'error_msg')
+            print('%s failed to login at %s! (Error massage: %s)' % (ip, str(datetime.now())[:-7], info))
+            return 1
+
+    def login(self):
+        self.get_token()
+        self.get_parameters()
+        res = self.final_login()
+        return res
+
+    @staticmethod
+    def parse_json(json_, key):
+        json_str = json_.split('(')[1][:-1]
+        json_dict = json.loads(json_str)
+        if key in json_dict:
+            return json_dict[key]
+        else:
+            return ''
 
 
 if __name__ == '__main__':
-    cur = Login('jiazerui', 'jzr31415926535', '10.62.58.218')
-    cur.get_token()
-    cur.get_parameters()
-    cur.final_login()
+    cfg = ConfigParser()
+    cfg.read('.config.ini', encoding='utf-8')
+    username = cfg.get('Login', 'Username')
+    password = cfg.get('Login', 'Password')
+    ip = cfg.get('Login', 'IP')
+    if ip == '':
+        ip = socket.gethostbyname(socket.getfqdn(socket.gethostname()))
+    cur = Login(username, password, ip).login()

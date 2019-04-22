@@ -10,7 +10,7 @@ from configparser import ConfigParser
 
 
 cfg = ConfigParser()
-cfg.read('.config.ini')
+cfg.read('.config.ini', encoding='utf-8')
 API_ID = cfg.get('DDNS', 'API_ID')
 API_KEY = cfg.get('DDNS', 'API_KEY')
 domain = cfg.get('DDNS', 'Domain')
@@ -74,8 +74,10 @@ class DDNS:
             # print(data)
             if 'RecordId' in data:
                 print('Update successfully!')
+            elif 'Message' in data:
+                print(data['Message'])
         except Exception as e:
-            print('Error,',e)
+            print('Error,', e)
 
 
 if __name__ == '__main__':

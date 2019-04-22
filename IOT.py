@@ -2,10 +2,13 @@ import requests
 import time
 from datetime import datetime
 from configparser import ConfigParser
+import re
+from Detect import Detect
+from Login_Campus_network import Login
 
 
 cfg = ConfigParser()
-cfg.read('.config.ini')
+cfg.read('.config.ini', encoding='utf-8')
 
 
 class AutoPadavan:
@@ -24,6 +27,10 @@ class AutoPadavan:
         self.headers = dict()
         self.headers['Authorization'] = cfg.get('Padavan', 'Auth')
         # HEADERS
+        self.detect = Detect()
+        self.username = cfg.get('Login', 'Username')
+        self.password = cfg.get('Login', 'Password')
+        self.login = Login(self.username, self.password, self.get_ip())
 
     def get_wifi_list(self):
         timestamp = int(round(time.time() * 1000))
@@ -81,22 +88,26 @@ class AutoPadavan:
 
     def get_ip(self):
         r = requests.get(self.url['get_ip'], headers=self.headers)
-        return '10.62.50.55'
-
-    def login(self):
-        timestamp = str(round(time.time() * 1000))
-        data = {'callback':'jsonp'+timestamp, 'username':'jiazerui@yidong', 'ip': self.get_ip()}
-        r = requests.get(self.url['login'], params=data)
-        print(r.text)
-
+        string = r"function wanlink_ip4_wan\(\) { return [0-9|.|']*;}"
+        search = re.search(string, r.text).group()
+        string2 = r"[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+        ip = re.search(string2, search).group()
+        return ip
 
     def maintain_network(self):
-        pass
+        while True:
+            r = self.detect.detect_outer()
+            if r:
+                rr = self.detect.detect_gateway()
+                self.login = Login(self.username, self.password, self.get_ip())
+                if rr:
+                    self.re_connect()
+                else:
+                    self.login.login()
+            time.sleep(1)
 
 
 if __name__ == '__main__':
     cur = AutoPadavan()
-    # code = cur.re_connect()
-    # hhh = cur.connect_wifi()
-    # cur.get_wifi_list()
-    cur.login()
+    # cur.get_ip()
+    cur.maintain_network()
