@@ -85,8 +85,8 @@ class Login:
             print('%s login successfully at %s!' % (ip, str(datetime.now())[:-7]))
             return 0
         else:
-            # error_info = self.parse_json(r.text, 'error_msg')
-            print('%s failed to login at %s! (Error massage: %s)' % (ip, str(datetime.now())[:-7], info))
+            error_info = self.parse_json(r.text, 'error_msg')
+            print('%s failed to login at %s! (Error massage: %s, %s)' % (ip, str(datetime.now())[:-7], info, error_info))
             return 1
 
     def login(self):
