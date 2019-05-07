@@ -8,7 +8,7 @@ from configparser import ConfigParser
 
 
 class Login:
-    def __init__(self, username, password, ip):
+    def __init__(self, username, password, ip=None):
         # Only for yidong
         self.url = dict()
         self.url['preparation'] = 'http://10.0.0.55/cgi-bin/get_challenge'

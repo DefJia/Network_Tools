@@ -30,7 +30,7 @@ class AutoPadavan:
         self.detect = Detect()
         self.username = cfg.get('Login', 'Username')
         self.password = cfg.get('Login', 'Password')
-        self.login = Login(self.username, self.password, self.get_ip())
+        # self.login = Login(self.username, self.password, self.get_ip())
 
     def get_wifi_list(self):
         timestamp = int(round(time.time() * 1000))
@@ -89,21 +89,27 @@ class AutoPadavan:
     def get_ip(self):
         r = requests.get(self.url['get_ip'], headers=self.headers)
         string = r"function wanlink_ip4_wan\(\) { return [0-9|.|']*;}"
-        search = re.search(string, r.text).group()
-        string2 = r"[0-9]+.[0-9]+.[0-9]+.[0-9]+"
-        ip = re.search(string2, search).group()
-        return ip
+        search = re.search(string, r.text)
+        if search:
+            search = search.group()
+            string2 = r"[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+            ip = re.search(string2, search)
+            if ip:
+                return ip.group()
+            else:
+                return None
+        else:
+            return None
 
     def maintain_network(self):
         while True:
             r = self.detect.detect_outer()
             if r:
                 rr = self.detect.detect_gateway()
-                self.login = Login(self.username, self.password, self.get_ip())
                 if rr:
                     self.re_connect()
-                else:
-                    self.login.login()
+                elif self.get_ip():
+                    Login(self.username, self.password, self.get_ip()).login()
             time.sleep(1)
 
 
@@ -111,3 +117,4 @@ if __name__ == '__main__':
     cur = AutoPadavan()
     # cur.get_ip()
     cur.maintain_network()
+    # cur.connect_wifi()
